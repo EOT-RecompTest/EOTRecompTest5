@@ -187,7 +187,15 @@ int main(int argc, char *argv[])
 
     hid::Init();
 
-    std::filesystem::path modulePath = reblueBinPath / "default.xex";
+    std::filesystem::path modulePath = reblueBinPath / "rebluelib" / "private" / "default.xex";
+    if (!std::filesystem::exists(modulePath))
+    {
+        modulePath = "C:/X360/eot-game/game/default.xex";
+        if (!std::filesystem::exists(modulePath))
+        {
+            modulePath = reblueBinPath / "default.xex";
+        }
+    }
     bool isGameInstalled = true;// Installer::checkGameInstall(GAME_INSTALL_DIRECTORY, modulePath);
     bool runInstallerWizard = forceInstaller || forceDLCInstaller || !isGameInstalled;
     //if (runInstallerWizard)
