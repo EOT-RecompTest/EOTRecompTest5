@@ -41,6 +41,17 @@ reblue::kernel::GuestHeap reblue::kernel::g_userHeap;
 XDBFWrapper g_xdbfWrapper;
 std::unordered_map<uint16_t, GuestTexture*> g_xdbfTextureCache;
 
+struct XexSectionTableEntry
+{
+    uint32_t info;
+    uint32_t virtualAddr;
+    uint32_t rawAddr;
+};
+
+static constexpr uint32_t SECTION_SIZE_MASK   = 0x0FFFFFFF;
+static constexpr uint32_t XEX_SECTION_NO_LOAD = 0x10000000;
+static constexpr uint32_t XEX_HEADER_SECTION_TABLE = 0x00000400;
+
 uint32_t LdrLoadModule(const std::filesystem::path &path)
 {
     auto loadResult = LoadFile(path);
@@ -68,42 +79,113 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
     uint32_t compressionType = byteswap(fileFormatInfo->compressionType);
     uint32_t infoSize = byteswap(fileFormatInfo->infoSize);
 
-    auto entry = *reinterpret_cast<const big_endian<uint32_t>*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_ENTRY_POINT));
+    auto entry = *reinterpret_cast<const big_endian<uint32_t>*>(
+        getOptHeaderPtr(loadResult.data(), XEX_HEADER_ENTRY_POINT));
 
-    auto srcData = loadResult.data() + headerSize;
-    auto destData = reinterpret_cast<uint8_t*>(reblue::kernel::g_memory.Translate(loadAddress));
+    std::vector<std::pair<uint32_t, uint32_t>> loadedRanges;
+    bool usedSectionLoader = false;
 
-    if (compressionType == XEX_COMPRESSION_NONE)
+    const uint8_t* sectionTableData = reinterpret_cast<const uint8_t*>(
+        getOptHeaderPtr(loadResult.data(), XEX_HEADER_SECTION_TABLE));
+    if (sectionTableData)
     {
-        memcpy(destData, srcData, imageSize);
-    }
-    else if (compressionType == XEX_COMPRESSION_BASIC)
-    {
-        auto* blocks = reinterpret_cast<const Xex2FileBasicCompressionBlock*>(fileFormatInfo + 1);
-        const size_t numBlocks = (infoSize / sizeof(Xex2FileBasicCompressionInfo)) - 1;
+        uint32_t dwordCount = *reinterpret_cast<const uint32_t*>(sectionTableData);
+        byteswap_inplace(dwordCount);
 
-        for (size_t i = 0; i < numBlocks; i++)
+        const size_t sectionCount = (dwordCount - 1) / 3;
+        const auto* sections = reinterpret_cast<const XexSectionTableEntry*>(sectionTableData + 4);
+        const size_t maxValid = (loadResult.data() + loadResult.size() - (sectionTableData + 4)) / sizeof(XexSectionTableEntry);
+
+        if (sectionCount <= maxValid && sectionCount <= 512)
         {
-            uint32_t dataSize = byteswap(blocks[i].dataSize);
-            uint32_t zeroSize = byteswap(blocks[i].zeroSize);
+            for (size_t i = 0; i < sectionCount; ++i)
+            {
+                const auto& s = sections[i];
+                const uint32_t flags = s.info & 0xF0000000;
+                const uint32_t size  = s.info & SECTION_SIZE_MASK;
+                const uint32_t vaddr = s.virtualAddr;
+                const uint32_t raw   = s.rawAddr;
 
-            memcpy(destData, srcData, dataSize);
+                if (size == 0)
+                    continue;
 
-            srcData += dataSize;
-            destData += dataSize;
+                uint8_t* dest = reinterpret_cast<uint8_t*>(reblue::kernel::g_memory.Translate(vaddr));
+                if (!dest)
+                    continue;
 
-            memset(destData, 0, zeroSize);
-            destData += zeroSize;
+                if ((flags & XEX_SECTION_NO_LOAD) || raw == 0)
+                {
+                    std::memset(dest, 0, size);
+                }
+                else
+                {
+                    if (raw + size > loadResult.size())
+                        continue;
+                    std::memcpy(dest, loadResult.data() + raw, size);
+                }
+
+                loadedRanges.emplace_back(vaddr, vaddr + size);
+            }
+
+            usedSectionLoader = true;
         }
     }
-    else
+
+    bool entryCovered = std::any_of(loadedRanges.begin(), loadedRanges.end(),
+        [&](const auto& r)
+        {
+            return entry >= r.first && entry < r.second;
+        });
+
+    if (!usedSectionLoader || !entryCovered)
     {
-        assert(false && "Unknown compression type.");
+        uint32_t rawLoadAddress = byteswap(security->loadAddress);
+        uint8_t* dest = reinterpret_cast<uint8_t*>(reblue::kernel::g_memory.Translate(rawLoadAddress));
+        const uint8_t* src = loadResult.data() + headerSize;
+
+        if (compressionType == XEX_COMPRESSION_NONE)
+        {
+            std::memcpy(dest, src, imageSize);
+        }
+        else if (compressionType == XEX_COMPRESSION_BASIC)
+        {
+            auto* blocks = reinterpret_cast<const Xex2FileBasicCompressionBlock*>(fileFormatInfo + 1);
+            size_t numBlocks = (infoSize / sizeof(Xex2FileBasicCompressionInfo)) - 1;
+
+            for (size_t i = 0; i < numBlocks; ++i)
+            {
+                uint32_t dataSize = byteswap(blocks[i].dataSize);
+                uint32_t zeroSize = byteswap(blocks[i].zeroSize);
+
+                std::memcpy(dest, src, dataSize);
+                dest += dataSize;
+                src += dataSize;
+
+                std::memset(dest, 0, zeroSize);
+                dest += zeroSize;
+            }
+        }
+        else
+        {
+            assert(false && "Unknown compression type.");
+        }
     }
 
-    auto res = reinterpret_cast<const Xex2ResourceInfo*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_RESOURCE_INFO));
+    struct ResourceInfoSimple
+    {
+        big_endian<uint32_t> offset;
+        big_endian<uint32_t> sizeOfData;
+    };
 
-    g_xdbfWrapper = XDBFWrapper((uint8_t*)reblue::kernel::g_memory.Translate(res->offset.get()), byteswap(res->sizeOfData));
+    auto res = reinterpret_cast<const ResourceInfoSimple*>(
+        getOptHeaderPtr(loadResult.data(), XEX_HEADER_RESOURCE_INFO));
+    if (res)
+    {
+        g_xdbfWrapper = XDBFWrapper(
+            static_cast<uint8_t*>(
+                reblue::kernel::g_memory.Translate(res->offset.get())),
+            byteswap(res->sizeOfData));
+    }
 
     return entry;
 }
