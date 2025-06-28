@@ -1,7 +1,6 @@
 #pragma once
 
 #define GUEST_INVALID_HANDLE_VALUE 0xFFFFFFFF
-#define GUEST_POISON_HANDLE_VALUE  0xEFEFEFEF
 #define OBJECT_SIGNATURE           (uint32_t)'XBOX'
 
 #include <cpu/ppc_context.h>
