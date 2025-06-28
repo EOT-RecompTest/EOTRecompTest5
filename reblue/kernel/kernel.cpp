@@ -35,6 +35,8 @@ void reblue::kernel::DestroyKernelObject(uint32_t handle)
 
 bool reblue::kernel::IsKernelObject(uint32_t handle)
 {
+    if (handle == GUEST_INVALID_HANDLE_VALUE || handle == GUEST_POISON_HANDLE_VALUE)
+        return false;
     return (handle & 0x80000000) != 0;
 }
 
