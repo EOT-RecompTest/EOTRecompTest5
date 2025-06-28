@@ -36,8 +36,8 @@ static std::array<std::string_view, 3> g_D3D12RequiredModules =
 
 const size_t XMAIOBegin = 0x7FEA0000;
 const size_t XMAIOEnd = XMAIOBegin + 0x0000FFFF;
-reblue::kernel::GuestMemory reblue::kernel::g_memory;
-reblue::kernel::GuestHeap reblue::kernel::g_userHeap;
+reblue::kernel::Memory reblue::kernel::g_memory;
+reblue::kernel::Heap reblue::kernel::g_userHeap;
 XDBFWrapper g_xdbfWrapper;
 std::unordered_map<uint16_t, GuestTexture*> g_xdbfTextureCache;
 
