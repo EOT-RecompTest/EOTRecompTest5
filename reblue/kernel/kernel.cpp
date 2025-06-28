@@ -1304,4 +1304,3 @@ void reblue::kernel::XamFree(uint32_t ptr)
     if (ptr != NULL)
         g_userHeap.Free(g_memory.Translate(ptr));
 }
-

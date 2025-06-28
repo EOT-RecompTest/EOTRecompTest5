@@ -2,44 +2,44 @@
 #include "memory.h"
 
 namespace reblue {
-namespace kernel {
+    namespace kernel {
 
-Memory::Memory()
-{
+        Memory::Memory()
+        {
 #ifdef _WIN32
-    base = (uint8_t*)VirtualAlloc((void*)0x100000000ull, PPC_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            base = (uint8_t*)VirtualAlloc((void*)0x100000000ull, PPC_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    if (base == nullptr)
-        base = (uint8_t*)VirtualAlloc(nullptr, PPC_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
+            if (base == nullptr)
+                base = (uint8_t*)VirtualAlloc(nullptr, PPC_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
 
-    if (base == nullptr)
-        return;
+            if (base == nullptr)
+                return;
 
-    DWORD oldProtect;
-    VirtualProtect(base, 4096, PAGE_READWRITE, &oldProtect);
+            DWORD oldProtect;
+            VirtualProtect(base, 4096, PAGE_READWRITE, &oldProtect);
 #else
-    base = (uint8_t*)mmap((void*)0x100000000ull, PPC_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+            base = (uint8_t*)mmap((void*)0x100000000ull, PPC_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
-    if (base == (uint8_t*)MAP_FAILED)
-        base = (uint8_t*)mmap(NULL, PPC_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+            if (base == (uint8_t*)MAP_FAILED)
+                base = (uint8_t*)mmap(NULL, PPC_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
-    if (base == nullptr)
-        return;
+            if (base == nullptr)
+                return;
 
-    mprotect(base, 4096, PROT_READ | PROT_WRITE);
+            mprotect(base, 4096, PROT_READ | PROT_WRITE);
 #endif
 
-    for (size_t i = 0; PPCFuncMappings[i].guest != 0; i++)
-    {
-        if (PPCFuncMappings[i].host != nullptr)
-            InsertFunction(PPCFuncMappings[i].guest, PPCFuncMappings[i].host);
-    }
-}
+            for (size_t i = 0; PPCFuncMappings[i].guest != 0; i++)
+            {
+                if (PPCFuncMappings[i].host != nullptr)
+                    InsertFunction(PPCFuncMappings[i].guest, PPCFuncMappings[i].host);
+            }
+        }
 
-extern "C" void* MmGetHostAddress(uint32_t ptr)
-{
-    return g_memory.Translate(ptr);
-}
+        extern "C" void* MmGetHostAddress(uint32_t ptr)
+        {
+            return g_memory.Translate(ptr);
+        }
 
-} // namespace kernel
+    } // namespace kernel
 } // namespace reblue
