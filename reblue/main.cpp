@@ -41,7 +41,7 @@ reblue::kernel::GuestHeap reblue::kernel::g_userHeap;
 XDBFWrapper g_xdbfWrapper;
 std::unordered_map<uint16_t, GuestTexture*> g_xdbfTextureCache;
 
-static std::vector<uint8_t> LoadFile(const std::filesystem::path& path)
+static std::vector<uint8_t> ReadFileToBuffer(const std::filesystem::path& path)
 {
     std::ifstream file(path, std::ios::binary | std::ios::ate);
     if (!file)
@@ -59,7 +59,7 @@ static std::vector<uint8_t> LoadFile(const std::filesystem::path& path)
 
 uint32_t LdrLoadModule(const std::filesystem::path &path)
 {
-    auto loadResult = LoadFile(path);
+    auto loadResult = ReadFileToBuffer(path);
     if (loadResult.empty())
     {
         assert("Failed to load module" && false);
@@ -79,12 +79,28 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
     auto* security = reinterpret_cast<const Xex2SecurityInfo*>(loadResult.data() + securityOffset);
     uint32_t loadAddress = byteswap(security->loadAddress);
     uint32_t imageSize = byteswap(security->imageSize);
+    if (loadAddress + imageSize > PPC_MEMORY_SIZE)
+    {
+        LOGN_ERROR("XEX image does not fit in guest memory");
+        return 0;
+    }
 
     const auto* fileFormatInfo = reinterpret_cast<const Xex2OptFileFormatInfo*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_FILE_FORMAT_INFO));
+    if (!fileFormatInfo)
+    {
+        LOGN_ERROR("XEX file missing FILE_FORMAT_INFO header");
+        return 0;
+    }
     uint32_t compressionType = byteswap(fileFormatInfo->compressionType);
     uint32_t infoSize = byteswap(fileFormatInfo->infoSize);
 
-    auto entry = *reinterpret_cast<const big_endian<uint32_t>*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_ENTRY_POINT));
+    auto entryPtr = reinterpret_cast<const big_endian<uint32_t>*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_ENTRY_POINT));
+    if (!entryPtr)
+    {
+        LOGN_ERROR("XEX entry point header missing");
+        return 0;
+    }
+    auto entry = *entryPtr;
 
     auto srcData = loadResult.data() + headerSize;
     auto destData = reinterpret_cast<uint8_t*>(reblue::kernel::g_memory.Translate(loadAddress));
@@ -117,7 +133,14 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         assert(false && "Unknown compression type.");
     }
 
+    LOGFN("Loaded XEX image of size {} bytes", imageSize);
+
     auto res = reinterpret_cast<const Xex2ResourceInfo*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_RESOURCE_INFO));
+    if (!res)
+    {
+        LOGN_ERROR("XEX missing resource info");
+        return 0;
+    }
 
     g_xdbfWrapper = XDBFWrapper((uint8_t*)reblue::kernel::g_memory.Translate(res->offset.get()), byteswap(res->sizeOfData));
 
