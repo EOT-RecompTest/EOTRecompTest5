@@ -54,6 +54,12 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
     uint32_t headerSize = byteswap(header->headerSize);
     uint32_t securityOffset = byteswap(header->securityOffset);
 
+    if (securityOffset + sizeof(Xex2SecurityInfo) > loadResult.size())
+    {
+        LOGN_ERROR("Security info outside of file range");
+        return 0;
+    }
+
     auto* security = reinterpret_cast<const Xex2SecurityInfo*>(loadResult.data() + securityOffset);
     uint32_t loadAddress = byteswap(security->loadAddress);
     uint32_t imageSize = byteswap(security->imageSize);
@@ -187,10 +193,10 @@ int main(int argc, char *argv[])
 
     hid::Init();
 
-    std::filesystem::path modulePath = reblueBinPath / "rebluelib" / "private" / "default.xex";
+    std::filesystem::path modulePath = "C:/X360/eot-game/game/default.xex";
     if (!std::filesystem::exists(modulePath))
     {
-        modulePath = "C:/X360/eot-game/game/default.xex";
+        modulePath = reblueBinPath / "rebluelib" / "private" / "default.xex";
         if (!std::filesystem::exists(modulePath))
         {
             modulePath = reblueBinPath / "default.xex";
