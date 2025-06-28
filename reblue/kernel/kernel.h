@@ -4,10 +4,6 @@
 #define GUEST_POISON_HANDLE_VALUE  0xEFEFEFEF
 #define OBJECT_SIGNATURE           (uint32_t)'XBOX'
 
-#ifndef STATUS_INVALID_HANDLE
-#define STATUS_INVALID_HANDLE 0xC0000008
-#endif
-
 #include <cpu/ppc_context.h>
 #include <cpu/guest_thread.h>
 #include <kernel/obj/event.h>
