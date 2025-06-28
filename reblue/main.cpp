@@ -61,6 +61,8 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         return 0;
     }
 
+    LOGFN("Loading module: {}", path.string());
+
     auto* header = reinterpret_cast<const Xex2Header*>(loadResult.data());
     uint32_t headerSize = header->headerSize;
     uint32_t securityOffset = header->securityOffset;
@@ -122,6 +124,7 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
             }
 
             usedSectionLoader = true;
+            LOGFN("Loaded %zu sections via section table", sectionCount);
         }
     }
 
@@ -163,8 +166,10 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         {
             assert(false && "Unknown compression type.");
         }
-    }
 
+        LOGFN("Copied XEX to 0x{:08X} ({} bytes)", rawLoadAddress, imageSize);
+    }
+    
     struct ResourceInfoSimple
     {
         big_endian<uint32_t> offset;
@@ -180,6 +185,8 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
                 reblue::kernel::g_memory.Translate(res->offset.get())),
             res->sizeOfData.get());
     }
+
+    LOGFN("XEX entry point: 0x{:08X}", entry);
 
     return entry;
 }
