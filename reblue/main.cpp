@@ -170,13 +170,7 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         LOGFN("Copied XEX to 0x{:08X} ({} bytes)", rawLoadAddress, imageSize);
     }
     
-    struct ResourceInfoSimple
-    {
-        big_endian<uint32_t> offset;
-        big_endian<uint32_t> sizeOfData;
-    };
-
-    auto res = reinterpret_cast<const ResourceInfoSimple*>(
+    auto res = reinterpret_cast<const Xex2ResourceInfo*>(
         getOptHeaderPtr(loadResult.data(), XEX_HEADER_RESOURCE_INFO));
     if (res)
     {
