@@ -171,16 +171,20 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         }
     }
 
-    auto res = reinterpret_cast<const Xex2ResourceInfo*>(
+    struct ResourceInfoSimple
+    {
+        big_endian<uint32_t> offset;
+        big_endian<uint32_t> sizeOfData;
+    };
+
+    auto res = reinterpret_cast<const ResourceInfoSimple*>(
         getOptHeaderPtr(loadResult.data(), XEX_HEADER_RESOURCE_INFO));
     if (res)
     {
-        uint32_t offset = res->resources[0].offset;
-        uint32_t size = res->resources[0].sizeOfData;
-
         g_xdbfWrapper = XDBFWrapper(
-            static_cast<uint8_t*>(reblue::kernel::g_memory.Translate(offset)),
-            size);
+            static_cast<uint8_t*>(
+                reblue::kernel::g_memory.Translate(res->offset.get())),
+            byteswap(res->sizeOfData));
     }
 
     return entry;
