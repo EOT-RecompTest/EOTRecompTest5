@@ -6,8 +6,8 @@
 #include <cpu/ppc_context.h>
 #include <cpu/guest_thread.h>
 #include <kernel/obj/event.h>
-#include <kernel/obj/guest_heap.h>
-#include <kernel/obj/guest_memory.h>
+#include <kernel/heap.h>
+#include <kernel/memory.h>
 #include <kernel/obj/mutant.h>
 #include <kernel/obj/semaphore.h>
 
@@ -27,8 +27,8 @@ namespace kernel {
     extern Mutex                 g_kernelLock;
 
     // guest memory
-    extern GuestHeap             g_userHeap;
-    extern GuestMemory           g_memory;
+    extern Heap                 g_userHeap;
+    extern Memory               g_memory;
 
     inline void CloseKernelObject(XDISPATCHER_HEADER& header);
     uint32_t GetKernelHandle(KernelObject* obj);

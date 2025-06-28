@@ -1,9 +1,9 @@
 #include <stdafx.h>
-#include "guest_memory.h"
+#include "memory.h"
 
 using namespace reblue::kernel;
 
-GuestMemory::GuestMemory()
+Memory::Memory()
 {
 #ifdef _WIN32
     base = (uint8_t*)VirtualAlloc((void*)0x100000000ull, PPC_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -35,4 +35,7 @@ GuestMemory::GuestMemory()
     }
 }
 
-
+void* MmGetHostAddress(uint32_t ptr)
+{
+    return g_memory.Translate(ptr);
+}

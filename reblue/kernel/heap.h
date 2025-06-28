@@ -1,10 +1,11 @@
 #pragma once
 
 #include "mutex.h"
+
 namespace reblue {
 namespace kernel {
 
-struct GuestHeap
+struct Heap
 {
     Mutex mutex;
     O1HeapInstance* heap;
@@ -36,5 +37,8 @@ struct GuestHeap
         return obj;
     }
 };
-}
-}
+
+} // namespace kernel
+} // namespace reblue
+
+extern reblue::kernel::Heap g_userHeap;
