@@ -175,9 +175,12 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         getOptHeaderPtr(loadResult.data(), XEX_HEADER_RESOURCE_INFO));
     if (res)
     {
+        uint32_t offset = res->resources[0].offset;
+        uint32_t size = res->resources[0].sizeOfData;
+
         g_xdbfWrapper = XDBFWrapper(
-            (uint8_t*)reblue::kernel::g_memory.Translate(res->resources[0].offset),
-            byteswap(res->resources[0].sizeOfData));
+            static_cast<uint8_t*>(reblue::kernel::g_memory.Translate(offset)),
+            size);
     }
 
     return entry;
