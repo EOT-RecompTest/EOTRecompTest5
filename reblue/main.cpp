@@ -101,6 +101,11 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         return 0;
     }
     auto entry = *entryPtr;
+    if (entry == 0)
+    {
+        LOGN_ERROR("XEX entry point is invalid");
+        return 0;
+    }
 
     auto srcData = loadResult.data() + headerSize;
     auto destData = reinterpret_cast<uint8_t*>(reblue::kernel::g_memory.Translate(loadAddress));

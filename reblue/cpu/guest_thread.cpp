@@ -76,7 +76,16 @@ uint32_t GuestThread::Start(const GuestThreadParams& params)
     GuestThreadContext ctx(cpuNumber);
     ctx.ppcContext.r3.u64 = params.value;
 
-    reblue::kernel::g_memory.FindFunction(params.function)(ctx.ppcContext, reblue::kernel::g_memory.base);
+    auto hostFunc = reblue::kernel::g_memory.FindFunction(params.function);
+    if (!hostFunc ||
+        (reinterpret_cast<uint8_t*>(hostFunc) >= reblue::kernel::g_memory.base &&
+         reinterpret_cast<uint8_t*>(hostFunc) < reblue::kernel::g_memory.base + PPC_MEMORY_SIZE))
+    {
+        LOGFN_ERROR("Guest function {:#x} not mapped to host code", params.function);
+        return 0;
+    }
+
+    hostFunc(ctx.ppcContext, reblue::kernel::g_memory.base);
 
     return ctx.ppcContext.r3.u32;
 }
