@@ -1,6 +1,6 @@
 #pragma once
 
-#include "mutex.h"
+#include "obj/mutex.h"
 
 namespace reblue {
 namespace kernel {
