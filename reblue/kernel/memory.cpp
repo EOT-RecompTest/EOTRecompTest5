@@ -16,7 +16,7 @@ Memory::Memory()
         return;
 
     DWORD oldProtect;
-    VirtualProtect(base, 4096, PAGE_NOACCESS, &oldProtect);
+    VirtualProtect(base, 4096, PAGE_READWRITE, &oldProtect);
 #else
     base = (uint8_t*)mmap((void*)0x100000000ull, PPC_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
@@ -26,7 +26,7 @@ Memory::Memory()
     if (base == nullptr)
         return;
 
-    mprotect(base, 4096, PROT_NONE);
+    mprotect(base, 4096, PROT_READ | PROT_WRITE);
 #endif
 
     for (size_t i = 0; PPCFuncMappings[i].guest != 0; i++)

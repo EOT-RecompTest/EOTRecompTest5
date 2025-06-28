@@ -1253,7 +1253,8 @@ uint32_t reblue::kernel::MmGetPhysicalAddress(uint32_t address)
 uint32_t reblue::kernel::MmAllocatePhysicalMemoryEx(uint32_t flags, uint32_t size, uint32_t protect, uint32_t minAddress, uint32_t maxAddress, uint32_t alignment)
 {
     LOGF_UTILITY("0x{:x}, 0x{:x}, 0x{:x}, 0x{:x}, 0x{:x}, 0x{:x}", flags, size, protect, minAddress, maxAddress, alignment);
-    return g_memory.MapVirtual(g_userHeap.AllocPhysical(size, alignment));
+    void* host = g_userHeap.AllocPhysical(size, alignment);
+    return host ? g_memory.MapVirtual(host) : 0;
 }
 
 uint32_t reblue::kernel::MmQueryAddressProtect(uint32_t guestAddress)

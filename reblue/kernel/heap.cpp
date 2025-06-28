@@ -30,6 +30,9 @@ void* Heap::AllocPhysical(size_t size, size_t alignment)
     std::lock_guard lock(physicalMutex);
 
     void* ptr = o1heapAllocate(physicalHeap, size + alignment);
+    if (ptr == nullptr)
+        return nullptr;
+
     size_t aligned = ((size_t)ptr + alignment) & ~(alignment - 1);
 
     *((void**)aligned - 1) = ptr;
