@@ -36,8 +36,8 @@ static std::array<std::string_view, 3> g_D3D12RequiredModules =
 
 const size_t XMAIOBegin = 0x7FEA0000;
 const size_t XMAIOEnd = XMAIOBegin + 0x0000FFFF;
-reblue::kernel::GuestMemory reblue::kernel::g_memory;
-reblue::kernel::GuestHeap reblue::kernel::g_userHeap;
+reblue::kernel::Memory reblue::kernel::g_memory;
+reblue::kernel::Heap reblue::kernel::g_userHeap;
 XDBFWrapper g_xdbfWrapper;
 std::unordered_map<uint16_t, GuestTexture*> g_xdbfTextureCache;
 
@@ -61,23 +61,19 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         return 0;
     }
 
-    auto* header = reinterpret_cast<const Xex2Header*>(loadResult.data());
-    uint32_t headerSize = byteswap(header->headerSize);
-    uint32_t securityOffset = byteswap(header->securityOffset);
+    LOGFN("Loading module: {}", path.string());
 
-    if (securityOffset + sizeof(Xex2SecurityInfo) > loadResult.size())
-    {
-        LOGN_ERROR("Security info outside of file range");
-        return 0;
-    }
+    auto* header = reinterpret_cast<const Xex2Header*>(loadResult.data());
+    uint32_t headerSize = header->headerSize;
+    uint32_t securityOffset = header->securityOffset;
 
     auto* security = reinterpret_cast<const Xex2SecurityInfo*>(loadResult.data() + securityOffset);
-    uint32_t loadAddress = byteswap(security->loadAddress);
-    uint32_t imageSize = byteswap(security->imageSize);
+    uint32_t loadAddress = security->loadAddress;
+    uint32_t imageSize = security->imageSize;
 
     const auto* fileFormatInfo = reinterpret_cast<const Xex2OptFileFormatInfo*>(getOptHeaderPtr(loadResult.data(), XEX_HEADER_FILE_FORMAT_INFO));
-    uint32_t compressionType = byteswap(fileFormatInfo->compressionType);
-    uint32_t infoSize = byteswap(fileFormatInfo->infoSize);
+    uint32_t compressionType = fileFormatInfo->compressionType;
+    uint32_t infoSize = fileFormatInfo->infoSize;
 
     auto entry = *reinterpret_cast<const big_endian<uint32_t>*>(
         getOptHeaderPtr(loadResult.data(), XEX_HEADER_ENTRY_POINT));
@@ -128,6 +124,7 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
             }
 
             usedSectionLoader = true;
+            LOGFN("Loaded %zu sections via section table", sectionCount);
         }
     }
 
@@ -139,7 +136,7 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
 
     if (!usedSectionLoader || !entryCovered)
     {
-        uint32_t rawLoadAddress = byteswap(security->loadAddress);
+        uint32_t rawLoadAddress = security->loadAddress;
         uint8_t* dest = reinterpret_cast<uint8_t*>(reblue::kernel::g_memory.Translate(rawLoadAddress));
         const uint8_t* src = loadResult.data() + headerSize;
 
@@ -154,8 +151,8 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
 
             for (size_t i = 0; i < numBlocks; ++i)
             {
-                uint32_t dataSize = byteswap(blocks[i].dataSize);
-                uint32_t zeroSize = byteswap(blocks[i].zeroSize);
+                uint32_t dataSize = blocks[i].dataSize;
+                uint32_t zeroSize = blocks[i].zeroSize;
 
                 std::memcpy(dest, src, dataSize);
                 dest += dataSize;
@@ -169,8 +166,10 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         {
             assert(false && "Unknown compression type.");
         }
-    }
 
+        LOGFN("Copied XEX to 0x{:08X} ({} bytes)", rawLoadAddress, imageSize);
+    }
+    
     struct ResourceInfoSimple
     {
         big_endian<uint32_t> offset;
@@ -184,8 +183,10 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
         g_xdbfWrapper = XDBFWrapper(
             static_cast<uint8_t*>(
                 reblue::kernel::g_memory.Translate(res->offset.get())),
-            byteswap(res->sizeOfData));
+            res->sizeOfData.get());
     }
+
+    LOGFN("XEX entry point: 0x{:08X}", entry.get());
 
     return entry;
 }
@@ -348,5 +349,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
 
 

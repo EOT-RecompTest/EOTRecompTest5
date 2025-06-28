@@ -1,7 +1,7 @@
 #include <stdafx.h>
 #include "guest_thread.h"
-#include <kernel/obj/guest_memory.h>
-#include <kernel/obj/guest_heap.h>
+#include <kernel/memory.h>
+#include <kernel/heap.h>
 #include <kernel/function.h>
 #include "ppc_context.h"
 #include <kernel/kernel.h>
