@@ -38,7 +38,6 @@ struct Heap
     }
 };
 
+extern Heap g_userHeap;
 } // namespace kernel
 } // namespace reblue
-
-extern reblue::kernel::Heap g_userHeap;
