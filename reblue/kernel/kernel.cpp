@@ -1043,12 +1043,8 @@ uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitM
     {
         return GetKernelObject(Handle)->Wait(timeout);
     }
-    else
-    {
-        assert(false && "Unrecognized handle value.");
-    }
 
-    return STATUS_TIMEOUT;
+    return STATUS_INVALID_HANDLE;
 }
 
 uint32_t reblue::kernel::NtCreateEvent(big_endian<uint32_t>* handle, void* objAttributes, uint32_t eventType, uint32_t initialState)
