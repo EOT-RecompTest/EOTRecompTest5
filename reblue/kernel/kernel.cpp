@@ -1037,16 +1037,9 @@ uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitM
 {
     uint32_t timeout = GuestTimeoutToMilliseconds(Timeout);
 
-    if (Handle == GUEST_INVALID_HANDLE_VALUE)
-        return 0xFFFFFFFF;
-
     if (IsKernelObject(Handle))
     {
-        auto* object = GetKernelObject(Handle);
-        if (IsInvalidKernelObject(object))
-            return 0xFFFFFFFF;
-
-        return object->Wait(timeout);
+        return GetKernelObject(Handle)->Wait(timeout);
     }
     else
     {
