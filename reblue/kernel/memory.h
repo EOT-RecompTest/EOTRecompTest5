@@ -46,8 +46,7 @@ struct Memory
     }
 };
 
+extern "C" void* MmGetHostAddress(uint32_t ptr);
+extern Memory g_memory;
 } // namespace kernel
 } // namespace reblue
-
-extern "C" void* MmGetHostAddress(uint32_t ptr);
-extern reblue::kernel::Memory g_memory;

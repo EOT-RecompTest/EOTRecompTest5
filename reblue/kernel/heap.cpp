@@ -3,7 +3,8 @@
 #include "memory.h"
 #include "function.h"
 
-using namespace reblue::kernel;
+namespace reblue {
+namespace kernel {
 
 constexpr size_t RESERVED_BEGIN = 0x7FEA0000;
 constexpr size_t RESERVED_END = 0xA0000000;
@@ -131,3 +132,6 @@ GUEST_FUNCTION_HOOK(sub_82BD6FD0, RtlSizeHeap);
 
 GUEST_FUNCTION_HOOK(sub_831CC9C8, XAllocMem);
 GUEST_FUNCTION_HOOK(sub_831CCA60, XFreeMem);
+
+} // namespace kernel
+} // namespace reblue
