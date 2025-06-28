@@ -4,6 +4,7 @@ add_subdirectory(${REBLUE_TOOLS_ROOT}/fshasher)
 add_subdirectory(${REBLUE_TOOLS_ROOT}/x_decompress)
 add_subdirectory(${REBLUE_TOOLS_ROOT}/XenonRecomp)
 add_subdirectory(${REBLUE_TOOLS_ROOT}/XenosRecomp)
+add_subdirectory(${REBLUE_TOOLS_ROOT}/xex_loader)
 
 set(QUICKBMS_ZIP "${REBLUE_TOOLS_ROOT}/quickbms/quickbms.zip")
 
