@@ -186,7 +186,7 @@ uint32_t LdrLoadModule(const std::filesystem::path &path)
             res->sizeOfData.get());
     }
 
-    LOGFN("XEX entry point: 0x{:08X}", entry);
+    LOGFN("XEX entry point: 0x{:08X}", entry.get());
 
     return entry;
 }
@@ -349,5 +349,6 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
 
 
