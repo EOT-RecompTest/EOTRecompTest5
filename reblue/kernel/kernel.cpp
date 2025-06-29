@@ -1022,15 +1022,55 @@ uint32_t reblue::kernel::NtSuspendThread(GuestThreadHandle* hThread, uint32_t* s
     return S_OK;
 }
 
+#ifndef STATUS_MEMORY_NOT_ALLOCATED
+#define STATUS_MEMORY_NOT_ALLOCATED 0xC00000A0
+#endif
+#ifndef STATUS_INVALID_PARAMETER
+#define STATUS_INVALID_PARAMETER 0xC000000D
+#endif
+#ifndef STATUS_NO_MEMORY
+#define STATUS_NO_MEMORY 0xC0000017
+#endif
+
 uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, big_endian<uint32_t>* regionSize, uint32_t freeType)
 {
-    LOG_UTILITY("!!! STUB !!!");
+    (void)processHandle;
+    (void)freeType;
+
+    if (!baseAddress || *baseAddress == 0)
+        return STATUS_MEMORY_NOT_ALLOCATED;
+
+    void* host = g_memory.Translate(*baseAddress);
+    g_userHeap.Free(host);
+
+    if (regionSize)
+        *regionSize = 0;
+    *baseAddress = 0;
+
+    return STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, uint32_t zeroBits, big_endian<uint32_t>* regionSize, uint32_t allocationType, uint32_t protect)
 {
-    LOG_UTILITY("!!! STUB !!!");
-    return 0;
+    (void)processHandle;
+    (void)zeroBits;
+    (void)allocationType;
+    (void)protect;
+
+    if (!regionSize || *regionSize == 0)
+        return STATUS_INVALID_PARAMETER;
+
+    size_t size = (*regionSize + 0xFFF) & ~size_t(0xFFF);
+    void* host = g_userHeap.Alloc(size);
+    if (!host)
+        return STATUS_NO_MEMORY;
+
+    uint32_t addr = g_memory.MapVirtual(host);
+    if (baseAddress)
+        *baseAddress = addr;
+    *regionSize = uint32_t(size);
+
+    return STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitMode, uint32_t Alertable, big_endian<int64_t>* Timeout)
