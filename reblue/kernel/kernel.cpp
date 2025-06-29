@@ -1024,13 +1024,49 @@ uint32_t reblue::kernel::NtSuspendThread(GuestThreadHandle* hThread, uint32_t* s
 
 uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, big_endian<uint32_t>* regionSize, uint32_t freeType)
 {
-    LOG_UTILITY("!!! STUB !!!");
+    assert(baseAddress);
+
+    // Only MEM_RELEASE and MEM_DECOMMIT are valid free types. For now treat
+    // both the same and release the memory back to the user heap.
+    if (!(*baseAddress))
+        return X_STATUS_MEMORY_NOT_ALLOCATED;
+
+    void* host = g_memory.Translate(*baseAddress);
+
+    // Query allocated size before freeing if regionSize provided.
+    uint32_t size = regionSize ? static_cast<uint32_t>(g_userHeap.Size(host)) : 0;
+
+    g_userHeap.Free(host);
+
+    if (regionSize)
+        *regionSize = size;
+    *baseAddress = 0;
+
+    return X_STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, uint32_t zeroBits, big_endian<uint32_t>* regionSize, uint32_t allocationType, uint32_t protect)
 {
     LOGF_UTILITY("NtAllocateVirtualMemory: handle=0x{:08X}", processHandle);
-    return 0;
+
+    // Basic parameter validation similar to xenia's implementation.
+    if (!baseAddress || !regionSize || !*regionSize)
+        return X_STATUS_INVALID_PARAMETER;
+
+    uint32_t size = (*regionSize + 0xFFF) & ~0xFFF; // round to 4k pages
+
+    void* host = g_userHeap.Alloc(size);
+    if (!host)
+        return X_STATUS_NO_MEMORY;
+
+    if (!(allocationType & X_MEM_NOZERO))
+        std::memset(host, 0, size);
+
+    uint32_t addr = g_memory.MapVirtual(host);
+    *baseAddress = addr;
+    *regionSize = size;
+
+    return X_STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitMode, uint32_t Alertable, big_endian<int64_t>* Timeout)

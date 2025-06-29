@@ -54,6 +54,7 @@ using Microsoft::WRL::ComPtr;
 #include "framework.h"
 #include "endian.h"
 #include <kernel/obj/mutex.h>
+#include <kernel/status.h>
 
 #ifndef _WIN32
 #include <sys/mman.h>
