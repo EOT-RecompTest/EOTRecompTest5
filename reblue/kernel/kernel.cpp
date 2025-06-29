@@ -1024,13 +1024,44 @@ uint32_t reblue::kernel::NtSuspendThread(GuestThreadHandle* hThread, uint32_t* s
 
 uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, big_endian<uint32_t>* regionSize, uint32_t freeType)
 {
-    LOG_UTILITY("!!! STUB !!!");
+    (void)processHandle;
+    (void)regionSize;
+    (void)freeType;
+
+    if (baseAddress == nullptr)
+        return STATUS_SUCCESS;
+
+    uint32_t guestAddress = baseAddress->get();
+    if (guestAddress != 0)
+    {
+        void* host = g_memory.Translate(guestAddress);
+        g_userHeap.Free(host);
+        *baseAddress = 0;
+    }
+
+    return STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, uint32_t zeroBits, big_endian<uint32_t>* regionSize, uint32_t allocationType, uint32_t protect)
 {
-    LOG_UTILITY("!!! STUB !!!");
-    return 0;
+    (void)processHandle;
+    (void)zeroBits;
+    (void)allocationType;
+
+    if (baseAddress == nullptr || regionSize == nullptr)
+        return STATUS_SUCCESS;
+
+    uint32_t size = regionSize->get();
+    void* ptr = g_userHeap.Alloc(size);
+    if (ptr == nullptr)
+        return 0xC0000017; // STATUS_NO_MEMORY
+
+    if (protect & (PAGE_READWRITE | PAGE_EXECUTE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_WRITECOPY))
+        memset(ptr, 0, size);
+
+    *baseAddress = g_memory.MapVirtual(ptr);
+
+    return STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitMode, uint32_t Alertable, big_endian<int64_t>* Timeout)
