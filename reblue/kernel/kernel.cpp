@@ -1024,13 +1024,59 @@ uint32_t reblue::kernel::NtSuspendThread(GuestThreadHandle* hThread, uint32_t* s
 
 uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, big_endian<uint32_t>* regionSize, uint32_t freeType)
 {
-    LOG_UTILITY("!!! STUB !!!");
+    (void)processHandle;
+
+    if (!baseAddress || *baseAddress == 0)
+        return X_STATUS_INVALID_PARAMETER;
+
+    if (!(freeType & (X_MEM_DECOMMIT | X_MEM_RELEASE)))
+        return X_STATUS_INVALID_PARAMETER;
+
+    if (freeType & X_MEM_RELEASE)
+    {
+        g_userHeap.Free(g_memory.Translate(*baseAddress));
+        if (regionSize)
+            *regionSize = 0;
+    }
+    else if (freeType & X_MEM_DECOMMIT)
+    {
+        uint32_t size = regionSize ? *regionSize : 0;
+        if (size)
+        {
+            size = (size + 0xFFF) & ~0xFFF;
+            memset(g_memory.Translate(*baseAddress), 0, size);
+            *regionSize = size;
+        }
+    }
+
+    return X_STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, uint32_t zeroBits, big_endian<uint32_t>* regionSize, uint32_t allocationType, uint32_t protect)
 {
-    LOG_UTILITY("!!! STUB !!!");
-    return 0;
+    (void)processHandle;
+    (void)zeroBits;
+    (void)protect;
+
+    if (!baseAddress || !regionSize || *regionSize == 0)
+        return X_STATUS_INVALID_PARAMETER;
+
+    if (!(allocationType & (X_MEM_COMMIT | X_MEM_RESERVE)))
+        return X_STATUS_INVALID_PARAMETER;
+
+    uint32_t size = *regionSize;
+    size = (size + 0xFFF) & ~0xFFF;
+
+    uint32_t addr = g_memory.MapVirtual(g_userHeap.AllocPhysical(size, 0x1000));
+    if (!addr)
+        return X_STATUS_NO_MEMORY;
+
+    if (!(allocationType & X_MEM_NOZERO))
+        memset(g_memory.Translate(addr), 0, size);
+
+    *baseAddress = addr;
+    *regionSize = size;
+    return X_STATUS_SUCCESS;
 }
 
 uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitMode, uint32_t Alertable, big_endian<int64_t>* Timeout)

@@ -1,7 +1,5 @@
 uint32_t reblue::kernel::KeInsertQueueDpc()
-uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, uint32_t zeroBits, big_endian<uint32_t>* regionSize, uint32_t allocationType, uint32_t protect)
 uint32_t reblue::kernel::NtCreateFile(big_endian<uint32_t>* FileHandle, uint32_t DesiredAccess, XOBJECT_ATTRIBUTES* Attributes, XIO_STATUS_BLOCK* IoStatusBlock, uint64_t* AllocationSize, uint32_t FileAttributes, uint32_t ShareAccess, uint32_t CreateDisposition, uint32_t CreateOptions)
-uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, big_endian<uint32_t>* regionSize, uint32_t freeType)
 uint32_t reblue::kernel::XAudioGetSpeakerConfig()
 uint32_t reblue::kernel::XamShowGamerCardUIForXUID()
 uint32_t reblue::kernel::XamShowKeyboardUI()
