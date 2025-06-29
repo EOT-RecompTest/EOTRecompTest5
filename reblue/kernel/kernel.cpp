@@ -747,6 +747,7 @@ uint32_t reblue::kernel::ExCreateThread(big_endian<uint32_t>* handle, uint32_t s
     uint32_t hostThreadId;
 
     *handle = reblue::kernel::GetKernelHandle(GuestThread::Start({ startAddress, startContext, creationFlags }, &hostThreadId));
+    LOGF_UTILITY("ExCreateThread handle=0x{:08X}", handle->get());
 
     if (threadId != nullptr)
         *threadId = hostThreadId;
@@ -954,6 +955,8 @@ void reblue::kernel::NtOpenFile()
 uint32_t reblue::kernel::NtCreateFile(big_endian<uint32_t>* FileHandle, uint32_t DesiredAccess, XOBJECT_ATTRIBUTES* Attributes, XIO_STATUS_BLOCK* IoStatusBlock, uint64_t* AllocationSize, uint32_t FileAttributes, uint32_t ShareAccess, uint32_t CreateDisposition, uint32_t CreateOptions)
 {
     LOG_UTILITY("!!! STUB !!!");
+    *FileHandle = GUEST_INVALID_HANDLE_VALUE;
+    LOGF_UTILITY("NtCreateFile handle=0x{:08X}", FileHandle->get());
     return 0;
 }
 
@@ -1065,6 +1068,7 @@ uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitM
 uint32_t reblue::kernel::NtCreateEvent(big_endian<uint32_t>* handle, void* objAttributes, uint32_t eventType, uint32_t initialState)
 {
     *handle = GetKernelHandle(CreateKernelObject<Event>(!eventType, !!initialState));
+    LOGF_UTILITY("NtCreateEvent handle=0x{:08X}", handle->get());
     return 0;
 }
 
@@ -1076,6 +1080,7 @@ void reblue::kernel::NtDuplicateObject()
 uint32_t reblue::kernel::NtCreateMutant(big_endian<uint32_t>* handle, void* objAttributes, uint32_t initialOwner)
 {
     *handle = GetKernelHandle(CreateKernelObject<Mutant>(!!initialOwner));
+    LOGF_UTILITY("NtCreateMutant handle=0x{:08X}", handle->get());
     return STATUS_SUCCESS;
 }
 
@@ -1149,6 +1154,7 @@ uint32_t reblue::kernel::NtSetEvent(Event* handle, uint32_t* previousState)
 uint32_t reblue::kernel::NtCreateSemaphore(big_endian<uint32_t>* Handle, XOBJECT_ATTRIBUTES* ObjectAttributes, uint32_t InitialCount, uint32_t MaximumCount)
 {
     *Handle = GetKernelHandle(CreateKernelObject<Semaphore>(InitialCount, MaximumCount));
+    LOGF_UTILITY("NtCreateSemaphore handle=0x{:08X}", Handle->get());
     return STATUS_SUCCESS;
 }
 

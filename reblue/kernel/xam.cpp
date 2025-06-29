@@ -143,7 +143,9 @@ uint32_t reblue::kernel::XamNotifyCreateListener(uint64_t qwAreas)
 
     listener->areas = qwAreas;
 
-    return reblue::kernel::GetKernelHandle(listener);
+    uint32_t handle = reblue::kernel::GetKernelHandle(listener);
+    LOGF_UTILITY("XamNotifyCreateListener handle=0x{:08X}", handle);
+    return handle;
 }
 
 void reblue::kernel::XamNotifyEnqueueEvent(uint32_t dwId, uint32_t dwParam)
@@ -273,6 +275,7 @@ uint32_t reblue::kernel::XamContentCreateEnumerator(uint32_t dwUserIndex, uint32
         *pcbBuffer = sizeof(_XCONTENT_DATA) * cItem;
 
     *phEnum = reblue::kernel::GetKernelHandle(enumerator);
+    LOGF_UTILITY("XamContentCreateEnumerator handle=0x{:08X}", phEnum->get());
 
     return 0;
 }
