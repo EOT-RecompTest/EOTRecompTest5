@@ -27,6 +27,7 @@ using Microsoft::WRL::ComPtr;
 #include <chrono>
 #include <span>
 #include <xbox.h>
+#include <xenia/xbox.h>
 #include <xxhash.h>
 #include <ankerl/unordered_dense.h>
 #include <ddspp.h>

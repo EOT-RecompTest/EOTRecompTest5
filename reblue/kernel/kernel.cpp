@@ -1040,7 +1040,7 @@ uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<
     }
     else if (freeType & X_MEM_DECOMMIT)
     {
-        uint32_t size = regionSize ? *regionSize : 0;
+        uint32_t size = regionSize ? static_cast<uint32_t>(*regionSize) : 0;
         if (size)
         {
             size = (size + 0xFFF) & ~0xFFF;
