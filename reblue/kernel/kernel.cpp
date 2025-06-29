@@ -1028,8 +1028,11 @@ uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<
     (void)regionSize;
     (void)freeType;
 
-    if (baseAddress == nullptr)
-        return STATUS_SUCCESS;
+    if (baseAddress == nullptr ||
+        baseAddress == reinterpret_cast<big_endian<uint32_t>*>(g_memory.Translate(0)) ||
+        regionSize == nullptr ||
+        regionSize == reinterpret_cast<big_endian<uint32_t>*>(g_memory.Translate(0)))
+        return 0xC0000005; // STATUS_ACCESS_VIOLATION
 
     uint32_t guestAddress = baseAddress->get();
     if (guestAddress != 0)
@@ -1048,8 +1051,11 @@ uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_end
     (void)zeroBits;
     (void)allocationType;
 
-    if (baseAddress == nullptr || regionSize == nullptr)
-        return STATUS_SUCCESS;
+    if (baseAddress == nullptr ||
+        baseAddress == reinterpret_cast<big_endian<uint32_t>*>(g_memory.Translate(0)) ||
+        regionSize == nullptr ||
+        regionSize == reinterpret_cast<big_endian<uint32_t>*>(g_memory.Translate(0)))
+        return 0xC0000005; // STATUS_ACCESS_VIOLATION
 
     uint32_t size = regionSize->get();
     void* ptr = g_userHeap.Alloc(size);
