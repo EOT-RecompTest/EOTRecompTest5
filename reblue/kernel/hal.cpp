@@ -1,5 +1,4 @@
 #include <stdafx.h>
-#include <cstdlib>
 #include "hal.h"
 
 void reblue::kernel::VdHSIOCalibrationLock()
@@ -24,11 +23,7 @@ uint32_t reblue::kernel::FscSetCacheElementCount()
 
 void reblue::kernel::HalReturnToFirmware()
 {
-    // This function is expected to never return on the console.  When a title
-    // requests a firmware return we simply terminate the process so execution
-    // doesn't continue with invalid state.
-    LOG_UTILITY("HalReturnToFirmware: shutting down");
-    std::exit(0);
+    LOG_UTILITY("!!! STUB !!!");
 }
 
 bool reblue::kernel::VdPersistDisplay(uint32_t a1, uint32_t* a2)
