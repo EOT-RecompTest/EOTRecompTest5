@@ -313,8 +313,7 @@ T GuestToHostFunction(const TFunction& func, TArgs&&... argv)
     auto args = std::make_tuple(std::forward<TArgs>(argv)...);
     auto& currentCtx = *GetPPCContext();
 
-    // Initialize a fresh context so all registers start with predictable values
-    PPCContext newCtx{};
+    PPCContext newCtx; // NOTE: No need for zero initialization, has lots of unnecessary code generation.
     newCtx.r1 = currentCtx.r1;
     newCtx.r13 = currentCtx.r13;
     newCtx.fpscr = currentCtx.fpscr;
