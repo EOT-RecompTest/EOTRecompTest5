@@ -15,10 +15,10 @@ namespace reblue {
             if (base == nullptr)
                 return;
 
-            // Keep the first page writable so games that access low addresses
-            // don't immediately fault during startup
             DWORD oldProtect;
-            VirtualProtect(base, 4096, PAGE_READWRITE, &oldProtect);
+            // Mark the first page as inaccessible so invalid NULL pointer
+            // accesses immediately fault, matching the reference
+            VirtualProtect(base, 4096, PAGE_NOACCESS, &oldProtect);
 #else
             base = (uint8_t*)mmap((void*)0x100000000ull, PPC_MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
 
@@ -28,9 +28,9 @@ namespace reblue {
             if (base == nullptr)
                 return;
 
-            // Keep the first page writable so games that access low addresses
-            // don't immediately fault during startup
-            mprotect(base, 4096, PROT_READ | PROT_WRITE);
+            // Mark the first page as inaccessible so invalid NULL pointer
+            // accesses immediately fault, matching the reference
+            mprotect(base, 4096, PROT_NONE);
 #endif
 
             for (size_t i = 0; PPCFuncMappings[i].guest != 0; i++)
