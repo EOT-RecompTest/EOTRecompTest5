@@ -1035,6 +1035,7 @@ uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_end
 
 uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitMode, uint32_t Alertable, big_endian<int64_t>* Timeout)
 {
+    LOGF_UTILITY("NtWaitForSingleObjectEx: handle=0x{:08X}", Handle);
     uint32_t timeout = GuestTimeoutToMilliseconds(Timeout);
 
     if (IsKernelObject(Handle))
