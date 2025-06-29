@@ -1038,16 +1038,28 @@ uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitM
     LOGF_UTILITY("NtWaitForSingleObjectEx: handle=0x{:08X}", Handle);
     uint32_t timeout = GuestTimeoutToMilliseconds(Timeout);
 
-    if (IsKernelObject(Handle))
+#ifndef STATUS_INVALID_HANDLE
+#define STATUS_INVALID_HANDLE 0xC0000008
+#endif
+
+    if (!IsKernelObject(Handle))
     {
-        return GetKernelObject(Handle)->Wait(timeout);
-    }
-    else
-    {
-        assert(false && "Unrecognized handle value.");
+        LOGF_WARNING("NtWaitForSingleObjectEx: invalid handle 0x{:08X}", Handle);
+        return STATUS_INVALID_HANDLE;
     }
 
-    return STATUS_TIMEOUT;
+    auto* header = reinterpret_cast<XDISPATCHER_HEADER*>(g_memory.Translate(Handle));
+    KernelObject* object = nullptr;
+    if (header->WaitListHead.Flink == OBJECT_SIGNATURE)
+        object = reinterpret_cast<KernelObject*>(g_memory.Translate(header->WaitListHead.Blink.get()));
+
+    if (object == nullptr || IsInvalidKernelObject(object))
+    {
+        LOGF_WARNING("NtWaitForSingleObjectEx: unknown kernel object for handle 0x{:08X}", Handle);
+        return STATUS_INVALID_HANDLE;
+    }
+
+    return object->Wait(timeout);
 }
 
 uint32_t reblue::kernel::NtCreateEvent(big_endian<uint32_t>* handle, void* objAttributes, uint32_t eventType, uint32_t initialState)
