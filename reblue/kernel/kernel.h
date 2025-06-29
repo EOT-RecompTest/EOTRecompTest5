@@ -30,6 +30,13 @@ namespace kernel {
     extern Heap                 g_userHeap;
     extern Memory               g_memory;
 
+    inline bool IsBadGuestPointer(const void* ptr) noexcept
+    {
+        return ptr == nullptr ||
+               !g_memory.IsInMemoryRange(ptr) ||
+               ptr < g_memory.base + 4096;
+    }
+
     inline void CloseKernelObject(XDISPATCHER_HEADER& header);
     uint32_t GetKernelHandle(KernelObject* obj);
     void DestroyKernelObject(KernelObject* obj);

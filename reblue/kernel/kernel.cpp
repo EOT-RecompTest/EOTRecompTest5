@@ -1028,12 +1028,8 @@ uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<
     (void)regionSize;
     (void)freeType;
 
-    if (baseAddress == nullptr ||
-        regionSize == nullptr ||
-        !g_memory.IsInMemoryRange(baseAddress) ||
-        !g_memory.IsInMemoryRange(regionSize) ||
-        reinterpret_cast<uint8_t*>(baseAddress) < g_memory.base + 4096 ||
-        reinterpret_cast<uint8_t*>(regionSize) < g_memory.base + 4096)
+    if (IsBadGuestPointer(baseAddress) ||
+        IsBadGuestPointer(regionSize))
     {
         return 0xC0000005; // STATUS_ACCESS_VIOLATION
     }
@@ -1055,12 +1051,8 @@ uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_end
     (void)zeroBits;
     (void)allocationType;
 
-    if (baseAddress == nullptr ||
-        regionSize == nullptr ||
-        !g_memory.IsInMemoryRange(baseAddress) ||
-        !g_memory.IsInMemoryRange(regionSize) ||
-        reinterpret_cast<uint8_t*>(baseAddress) < g_memory.base + 4096 ||
-        reinterpret_cast<uint8_t*>(regionSize) < g_memory.base + 4096)
+    if (IsBadGuestPointer(baseAddress) ||
+        IsBadGuestPointer(regionSize))
     {
         return 0xC0000005; // STATUS_ACCESS_VIOLATION
     }
