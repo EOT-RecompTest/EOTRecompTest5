@@ -750,7 +750,7 @@ uint32_t reblue::kernel::ExCreateThread(big_endian<uint32_t>* handle, uint32_t s
 
     uint32_t h = reblue::kernel::GetKernelHandle(GuestThread::Start({ startAddress, startContext, creationFlags }, &hostThreadId));
     *handle = h;
-    LOGF_UTILITY("ExCreateThread returning handle=0x%08X", h);
+    LOGF_UTILITY("ExCreateThread returning handle=0x{:08X}", h);
 
     if (threadId != nullptr)
         *threadId = hostThreadId;
@@ -959,7 +959,7 @@ uint32_t reblue::kernel::NtCreateFile(big_endian<uint32_t>* FileHandle, uint32_t
 {
     uint32_t h = GetKernelHandle(CreateKernelObject<DummyKernelObject>());
     *FileHandle = h;
-    LOGF_UTILITY("NtCreateFile returning handle=0x%08X", h);
+    LOGF_UTILITY("NtCreateFile returning handle=0x{:08X}", h);
     return STATUS_SUCCESS;
 }
 
@@ -1054,14 +1054,18 @@ uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitM
         return STATUS_INVALID_HANDLE;
     }
 
-    auto* obj = GetKernelObject(Handle);
-    if (obj == nullptr || !IsKernelObject(obj) || IsInvalidKernelObject(obj))
+    auto* header = reinterpret_cast<XDISPATCHER_HEADER*>(g_memory.Translate(Handle));
+    KernelObject* obj = nullptr;
+    if (header->WaitListHead.Flink == OBJECT_SIGNATURE)
+        obj = reinterpret_cast<KernelObject*>(g_memory.Translate(header->WaitListHead.Blink.get()));
+
+    if (obj == nullptr || IsInvalidKernelObject(obj))
     {
         LOGF_WARNING("NtWaitForSingleObjectEx: unknown kernel object for handle 0x{:08X}", Handle);
         return STATUS_INVALID_HANDLE;
     }
 
-    LOGF_UTILITY("NtWait: using valid handle=0x%08X", Handle);
+    LOGF_UTILITY("NtWait: using valid handle=0x{:08X}", Handle);
     return obj->Wait(timeout);
 }
 
@@ -1069,7 +1073,7 @@ uint32_t reblue::kernel::NtCreateEvent(big_endian<uint32_t>* handle, void* objAt
 {
     uint32_t h = GetKernelHandle(CreateKernelObject<Event>(!eventType, !!initialState));
     *handle = h;
-    LOGF_UTILITY("NtCreateEvent returning handle=0x%08X", h);
+    LOGF_UTILITY("NtCreateEvent returning handle=0x{:08X}", h);
     return STATUS_SUCCESS;
 }
 
@@ -1082,7 +1086,7 @@ uint32_t reblue::kernel::NtCreateMutant(big_endian<uint32_t>* handle, void* objA
 {
     uint32_t h = GetKernelHandle(CreateKernelObject<Mutant>(!!initialOwner));
     *handle = h;
-    LOGF_UTILITY("NtCreateMutant returning handle=0x%08X", h);
+    LOGF_UTILITY("NtCreateMutant returning handle=0x{:08X}", h);
     return STATUS_SUCCESS;
 }
 
@@ -1157,7 +1161,7 @@ uint32_t reblue::kernel::NtCreateSemaphore(big_endian<uint32_t>* Handle, XOBJECT
 {
     uint32_t h = GetKernelHandle(CreateKernelObject<Semaphore>(InitialCount, MaximumCount));
     *Handle = h;
-    LOGF_UTILITY("NtCreateSemaphore returning handle=0x%08X", h);
+    LOGF_UTILITY("NtCreateSemaphore returning handle=0x{:08X}", h);
     return STATUS_SUCCESS;
 }
 
