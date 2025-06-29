@@ -31,6 +31,7 @@ namespace reblue {
 
             // Mark the first page as inaccessible so invalid NULL pointer
             // accesses immediately fault, matching the reference
+            // DO NOT EDIT THIS MPROTECT EITHER
             mprotect(base, 4096, PROT_NONE);
 #endif
 
