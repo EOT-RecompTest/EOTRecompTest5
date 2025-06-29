@@ -1029,7 +1029,7 @@ uint32_t reblue::kernel::NtFreeVirtualMemory(uint32_t processHandle, big_endian<
 
 uint32_t reblue::kernel::NtAllocateVirtualMemory(uint32_t processHandle, big_endian<uint32_t>* baseAddress, uint32_t zeroBits, big_endian<uint32_t>* regionSize, uint32_t allocationType, uint32_t protect)
 {
-    LOG_UTILITY("!!! STUB !!!");
+    LOGF_UTILITY("NtAllocateVirtualMemory: handle=0x{:08X}", processHandle);
     return 0;
 }
 
