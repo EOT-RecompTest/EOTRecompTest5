@@ -1054,18 +1054,15 @@ uint32_t reblue::kernel::NtWaitForSingleObjectEx(uint32_t Handle, uint32_t WaitM
         return STATUS_INVALID_HANDLE;
     }
 
-    auto* header = reinterpret_cast<XDISPATCHER_HEADER*>(g_memory.Translate(Handle));
-    KernelObject* object = nullptr;
-    if (header->WaitListHead.Flink == OBJECT_SIGNATURE)
-        object = reinterpret_cast<KernelObject*>(g_memory.Translate(header->WaitListHead.Blink.get()));
-
-    if (object == nullptr || IsInvalidKernelObject(object))
+    auto* obj = GetKernelObject(Handle);
+    if (obj == nullptr || !IsKernelObject(obj) || IsInvalidKernelObject(obj))
     {
         LOGF_WARNING("NtWaitForSingleObjectEx: unknown kernel object for handle 0x{:08X}", Handle);
         return STATUS_INVALID_HANDLE;
     }
 
-    return object->Wait(timeout);
+    LOGF_UTILITY("NtWait: using valid handle=0x%08X", Handle);
+    return obj->Wait(timeout);
 }
 
 uint32_t reblue::kernel::NtCreateEvent(big_endian<uint32_t>* handle, void* objAttributes, uint32_t eventType, uint32_t initialState)
