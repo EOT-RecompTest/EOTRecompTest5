@@ -1,0 +1,72 @@
+This folder defines numerous guest entry points in imports.cpp and heap.cpp.
+They correspond to low level kernel and Direct3D functions.
+
+From heap.cpp:
+sub_82BD7788 - HeapCreate stub.
+sub_82BD9250 - HeapDestroy stub.
+sub_82BD7D30 - RtlAllocateHeap.
+sub_82BD8600 - RtlFreeHeap.
+sub_82BD88F0 - RtlReAllocateHeap.
+sub_82BD6FD0 - RtlSizeHeap.
+sub_831CC9C8 - XAllocMem.
+sub_831CCA60 - XFreeMem.
+
+From imports.cpp (various GPU and memory routines):
+sub_824694A0 - RtlAllocateHeap.
+sub_82469D88 - RtlFreeHeap.
+sub_8246A070 - RtlReAllocateHeap.
+sub_82468738 - RtlSizeHeap.
+sub_82466CC8 - XAllocMem.
+sub_82466D60 - XFreeMem.
+sub_8248D7E8 - VirtualAlloc.
+sub_8248D838 - VirtualFree.
+sub_826C0480 - memmove.
+sub_826BF770 - memcpy.
+sub_826BFCF0 - memset.
+sub_82468EF0 - HeapCreate stub.
+sub_8246B710 - Direct3D_CreateDevice.
+sub_82473D78 - D3DDevice_SetRenderTarget.
+sub_8246D540 - D3DDevice_CreateSurface.
+sub_824740A8 - D3DDevice_SetDepthStencilSurface.
+sub_8246D668 - D3DSurface_GetDesc.
+sub_8246D420 - D3DDevice_CreateTexture.
+sub_8246D788 - D3DDevice_SetTexture.
+sub_8246D408 - LockTextureRect.
+sub_8247D840 - D3DDevice_CreatePixelShader.
+sub_8247BF68 - D3DDevice_SetPixelShader.
+sub_82481310 - D3DDevice_CreateIndexBuffer.
+sub_824813C0 - D3DIndexBuffer_Lock.
+sub_82481420 - D3DIndexBuffer_Unlock.
+sub_8247D938 - D3DDevice_CreateVertexShader.
+sub_824811D8 - D3DDevice_CreateVertexBuffer.
+sub_824812A0 - D3DVertexBuffer_Lock.
+sub_82481300 - D3DVertexBuffer_Unlock.
+sub_8247C228 - D3DDevice_SetVertexShader.
+sub_8246B870 - UnlockTextureRect.
+sub_82480B68 - D3D_DestroyResource.
+sub_82473838 - D3DDevice_SetStreamSource.
+sub_82473548 - D3DDevice_SetScissorRect.
+sub_82490030 - D3DDevice_DrawIndexedVertices.
+sub_8248FC28 - D3DDevice_DrawVertices.
+sub_8247C3F8 - D3DDevice_SetVertexDeclaration.
+sub_82473960 - D3DDevice_SetIndices.
+sub_82478FE8 - D3DDevice_Resolve.
+sub_82489F40 - D3DDevice_Clear.
+sub_8215D508 - D3DDevice_SetViewport.
+sub_82495F10 - D3DXFilterTexture.
+sub_82273858 - D3DDevice_Present.
+sub_824E39C8 - D3DDevice_SetResolution.
+sub_8248FBC8 - D3DDevice_DrawVerticesUP.
+sub_8246B5A8 - D3DDevice_AcquireThreadOwnership.
+sub_8246B5E8 - D3DDevice_ReleaseThreadOwnership.
+sub_8246B4E0 - D3DDevice_Release.
+sub_82576868 - XGGetTextureDesc.
+sub_8248A000 - D3DDevice_SetPrediction.
+sub_8247C4F8 - D3DDevice_SetShaderGPRAllocation.
+sub_8247C418 - D3DDevice_CreateVertexDeclaration.
+sub_82497FF8 - D3DXCompileShaderEx.
+sub_82286630 - hcgVertexShaderCreateByHlsl.
+sub_82286770 - hcgPixelShaderCreateByHlsl.
+sub_82473A78 - D3DDevice_SetGammaRamp.
+sub_8246EEB8 - D3DDevice_BlockUntilIdle stub.
+sub_82466ED8 - Unspecified stub.

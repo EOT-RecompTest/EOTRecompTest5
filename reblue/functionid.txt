@@ -1,0 +1,14 @@
+The following guest function IDs are referenced in this folder.
+They are listed in misc_impl.cpp and correspond to early runtime hooks
+or stubs used by the project.
+
+sub_82274140 - Hook for GuestThread::SetThreadName.
+sub_8248D058 - Hook for OutputDebugStringA.
+sub_820D1998 - Placeholder guest hook (unused).
+sub_82BD4CA8 - Stub for unimplemented function.
+sub_824665A0 - QueryPerformanceCounterImpl.
+sub_82466568 - QueryPerformanceFrequencyImpl.
+sub_8248D098 - GetTickCountImpl.
+sub_8248CED0 - GlobalMemoryStatusImpl.
+sub_82BD4AE8 - PPC helper for sprintf.
+sub_831B1630 - Additional helper used by sprintf.

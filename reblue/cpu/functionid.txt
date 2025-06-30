@@ -1,0 +1,5 @@
+This folder contains hooks for thread management located in guest_thread.cpp.
+
+sub_82DFA2E8 - SetThreadNameImpl assigns a name to a guest thread.
+sub_82BD57A8 - GetThreadPriorityImpl queries the current thread priority.
+sub_82BD5910 - SetThreadIdealProcessorImpl selects an ideal CPU core.

@@ -1,0 +1,3 @@
+The achievement_overlay.cpp file hooks a single guest function.
+
+sub_82B43480 - Invoked through PPC_FUNC for achievement handling.
