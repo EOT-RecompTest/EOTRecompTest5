@@ -1,0 +1,14 @@
+file_system.cpp lists guest IDs for standard file operations.
+
+sub_8248B780 - XCreateFileA.
+sub_8248DC60 - XFindFirstFileA.
+sub_8248DCF0 - XFindNextFileA.
+sub_826E19C8 - XGetFileAttributesA.
+sub_8248CDA8 - XGetFileSizeA.
+sub_8248E688 - XGetFileSizeExA.
+sub_8248CBF8 - XReadFile.
+sub_831CDF40 - XReadFileEx.
+sub_8248B3B8 - XSetFilePointer.
+sub_8272EF10 - XSetFilePointerEx.
+sub_8248B500 - XWriteFile.
+sub_8248CB00 - XMountUtilityDrive stub.
