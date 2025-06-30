@@ -5,7 +5,7 @@
 namespace reblue {
 namespace kernel {
 
-struct Heap
+struct GuestHeap
 {
     Mutex mutex;
     O1HeapInstance* heap;
@@ -38,6 +38,6 @@ struct Heap
     }
 };
 
-extern Heap g_userHeap;
+extern GuestHeap g_userHeap;
 } // namespace kernel
 } // namespace reblue

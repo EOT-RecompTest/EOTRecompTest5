@@ -27,8 +27,8 @@ namespace kernel {
     extern Mutex                 g_kernelLock;
 
     // guest memory
-    extern Heap                 g_userHeap;
-    extern Memory               g_memory;
+    extern GuestHeap            g_userHeap;
+    extern GuestMemory          g_memory;
 
     inline void CloseKernelObject(XDISPATCHER_HEADER& header);
     uint32_t GetKernelHandle(KernelObject* obj);

@@ -8,11 +8,11 @@
 namespace reblue {
 namespace kernel {
 
-struct Memory
+struct GuestMemory
 {
     uint8_t* base{};
 
-    Memory();
+    GuestMemory();
 
     bool IsInMemoryRange(const void* host) const noexcept
     {
@@ -46,7 +46,6 @@ struct Memory
     }
 };
 
-extern "C" void* MmGetHostAddress(uint32_t ptr);
-extern Memory g_memory;
+extern GuestMemory g_memory;
 } // namespace kernel
 } // namespace reblue

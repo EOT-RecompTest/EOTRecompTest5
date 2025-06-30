@@ -4,7 +4,7 @@
 namespace reblue {
     namespace kernel {
 
-        Memory::Memory()
+        GuestMemory::GuestMemory()
         {
 #ifdef _WIN32
             base = (uint8_t*)VirtualAlloc((void*)0x100000000ull, PPC_MEMORY_SIZE, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
@@ -42,10 +42,5 @@ namespace reblue {
             }
         }
 
-        extern "C" void* MmGetHostAddress(uint32_t ptr)
-        {
-            return g_memory.Translate(ptr);
-        }
-
-    } // namespace kernel
+        } // namespace kernel
 } // namespace reblue
